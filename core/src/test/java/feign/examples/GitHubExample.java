@@ -15,10 +15,12 @@ package feign.examples;
 
 import static feign.Util.UTF_8;
 import static feign.Util.ensureClosed;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.lang.reflect.Type;
 import java.util.List;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
 import feign.Feign;
@@ -33,55 +35,55 @@ import feign.codec.Decoder;
  */
 public class GitHubExample {
 
-  public static void main(String... args) {
-    GitHub github = Feign.builder()
-        .decoder(new GsonDecoder())
-        .logger(new Logger.ErrorLogger())
-        .logLevel(Logger.Level.BASIC)
-        .target(GitHub.class, "https://api.github.com");
+    public static void main(String... args) {
+        GitHub github = Feign.builder()
+                .decoder(new GsonDecoder())
+                .logger(new Logger.ErrorLogger())
+                .logLevel(Logger.Level.BASIC)
+                .target(GitHub.class, "https://api.github.com");
 
-    System.out.println("Let's fetch and print a list of the contributors to this library.");
-    List<Contributor> contributors = github.contributors("netflix", "feign");
-    for (Contributor contributor : contributors) {
-      System.out.println(contributor.login + " (" + contributor.contributions + ")");
-    }
-  }
-
-  interface GitHub {
-
-    @RequestLine("GET /repos/{owner}/{repo}/contributors")
-    List<Contributor> contributors(@Param("owner") String owner, @Param("repo") String repo);
-  }
-
-  static class Contributor {
-
-    String login;
-    int contributions;
-  }
-
-  /**
-   * Here's how it looks to write a decoder. Note: you can instead use {@code feign-gson}!
-   */
-  static class GsonDecoder implements Decoder {
-
-    private final Gson gson = new Gson();
-
-    @Override
-    public Object decode(Response response, Type type) throws IOException {
-      if (void.class == type || response.body() == null) {
-        return null;
-      }
-      Reader reader = response.body().asReader(UTF_8);
-      try {
-        return gson.fromJson(reader, type);
-      } catch (JsonIOException e) {
-        if (e.getCause() != null && e.getCause() instanceof IOException) {
-          throw IOException.class.cast(e.getCause());
+        System.out.println("Let's fetch and print a list of the contributors to this library.");
+        List<Contributor> contributors = github.contributors("netflix", "feign");
+        for (Contributor contributor : contributors) {
+            System.out.println(contributor.login + " (" + contributor.contributions + ")");
         }
-        throw e;
-      } finally {
-        ensureClosed(reader);
-      }
     }
-  }
+
+    interface GitHub {
+
+        @RequestLine("GET /repos/{owner}/{repo}/contributors")
+        List<Contributor> contributors(@Param("owner") String owner, @Param("repo") String repo);
+    }
+
+    static class Contributor {
+
+        String login;
+        int contributions;
+    }
+
+    /**
+     * Here's how it looks to write a decoder. Note: you can instead use {@code feign-gson}!
+     */
+    static class GsonDecoder implements Decoder {
+
+        private final Gson gson = new Gson();
+
+        @Override
+        public Object decode(Response response, Type type) throws IOException {
+            if (void.class == type || response.body() == null) {
+                return null;
+            }
+            Reader reader = response.body().asReader(UTF_8);
+            try {
+                return gson.fromJson(reader, type);
+            } catch (JsonIOException e) {
+                if (e.getCause() != null && e.getCause() instanceof IOException) {
+                    throw IOException.class.cast(e.getCause());
+                }
+                throw e;
+            } finally {
+                ensureClosed(reader);
+            }
+        }
+    }
 }

@@ -65,9 +65,9 @@ public interface Target<T> {
 
   public static class HardCodedTarget<T> implements Target<T> {
 
-    private final Class<T> type;
-    private final String name;
-    private final String url;
+    private final Class<T> type; // interface org.springframework.cloud.openfeign.FeignHttpClientUrlTests$BeanUrlClientNoProtocol
+    private final String name; // beanappurlnoprotocol
+    private final String url; // http://localhost:27257/path
 
     public HardCodedTarget(Class<T> type, String url) {
       this(type, url, url);
