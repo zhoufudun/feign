@@ -15,5 +15,5 @@ package feign;
 
 public interface AsyncContextSupplier<C> {
 
-  C newContext();
+    C newContext();
 }

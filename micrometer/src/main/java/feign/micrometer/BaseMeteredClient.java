@@ -14,6 +14,7 @@
 package feign.micrometer;
 
 import static feign.micrometer.MetricTagResolver.EMPTY_TAGS_ARRAY;
+
 import feign.Request;
 import feign.Request.Options;
 import feign.RequestTemplate;
@@ -25,54 +26,54 @@ import io.micrometer.core.instrument.Timer;
 
 abstract class BaseMeteredClient {
 
-  protected final MeterRegistry meterRegistry;
-  protected final MetricName metricName;
-  protected final MetricTagResolver metricTagResolver;
+    protected final MeterRegistry meterRegistry;
+    protected final MetricName metricName;
+    protected final MetricTagResolver metricTagResolver;
 
-  public BaseMeteredClient(
-      MeterRegistry meterRegistry, MetricName metricName, MetricTagResolver metricTagResolver) {
-    super();
-    this.meterRegistry = meterRegistry;
-    this.metricName = metricName;
-    this.metricTagResolver = metricTagResolver;
-  }
+    public BaseMeteredClient(
+            MeterRegistry meterRegistry, MetricName metricName, MetricTagResolver metricTagResolver) {
+        super();
+        this.meterRegistry = meterRegistry;
+        this.metricName = metricName;
+        this.metricTagResolver = metricTagResolver;
+    }
 
-  protected void countResponseCode(
-                                   Request request,
-                                   Response response,
-                                   Options options,
-                                   int responseStatus,
-                                   Exception e) {
-    final Tag[] extraTags = extraTags(request, response, options, e);
-    final RequestTemplate template = request.requestTemplate();
-    final Tags allTags =
-        metricTagResolver
-            .tag(
-                template.methodMetadata(),
-                template.feignTarget(),
-                e,
-                Tag.of("http_status", String.valueOf(responseStatus)),
-                Tag.of("status_group", responseStatus / 100 + "xx"),
-                Tag.of("http_method", template.methodMetadata().template().method()),
-                Tag.of("uri", template.methodMetadata().template().path()))
-            .and(extraTags);
-    meterRegistry.counter(metricName.name("http_response_code"), allTags).increment();
-  }
+    protected void countResponseCode(
+            Request request,
+            Response response,
+            Options options,
+            int responseStatus,
+            Exception e) {
+        final Tag[] extraTags = extraTags(request, response, options, e);
+        final RequestTemplate template = request.requestTemplate();
+        final Tags allTags =
+                metricTagResolver
+                        .tag(
+                                template.methodMetadata(),
+                                template.feignTarget(),
+                                e,
+                                Tag.of("http_status", String.valueOf(responseStatus)),
+                                Tag.of("status_group", responseStatus / 100 + "xx"),
+                                Tag.of("http_method", template.methodMetadata().template().method()),
+                                Tag.of("uri", template.methodMetadata().template().path()))
+                        .and(extraTags);
+        meterRegistry.counter(metricName.name("http_response_code"), allTags).increment();
+    }
 
-  protected Timer createTimer(Request request, Response response, Options options, Exception e) {
-    final RequestTemplate template = request.requestTemplate();
-    final Tags allTags =
-        metricTagResolver
-            .tag(
-                template.methodMetadata(),
-                template.feignTarget(),
-                e,
-                Tag.of("uri", template.methodMetadata().template().path()))
-            .and(extraTags(request, response, options, e));
-    return meterRegistry.timer(metricName.name(e), allTags);
-  }
+    protected Timer createTimer(Request request, Response response, Options options, Exception e) {
+        final RequestTemplate template = request.requestTemplate();
+        final Tags allTags =
+                metricTagResolver
+                        .tag(
+                                template.methodMetadata(),
+                                template.feignTarget(),
+                                e,
+                                Tag.of("uri", template.methodMetadata().template().path()))
+                        .and(extraTags(request, response, options, e));
+        return meterRegistry.timer(metricName.name(e), allTags);
+    }
 
-  protected Tag[] extraTags(Request request, Response response, Options options, Exception e) {
-    return EMPTY_TAGS_ARRAY;
-  }
+    protected Tag[] extraTags(Request request, Response response, Options options, Exception e) {
+        return EMPTY_TAGS_ARRAY;
+    }
 }

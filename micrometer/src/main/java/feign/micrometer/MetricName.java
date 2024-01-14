@@ -15,9 +15,9 @@ package feign.micrometer;
 
 public interface MetricName {
 
-  String name();
+    String name();
 
-  String name(String suffix);
+    String name(String suffix);
 
-  String name(Throwable e);
+    String name(Throwable e);
 }

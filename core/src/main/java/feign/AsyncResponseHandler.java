@@ -16,6 +16,7 @@ package feign;
 import feign.Logger.Level;
 import feign.codec.Decoder;
 import feign.codec.ErrorDecoder;
+
 import java.lang.reflect.Type;
 import java.util.concurrent.CompletableFuture;
 
@@ -25,38 +26,37 @@ import java.util.concurrent.CompletableFuture;
  */
 @Experimental
 class AsyncResponseHandler {
-  private final ResponseHandler responseHandler;
+    private final ResponseHandler responseHandler;
 
-  AsyncResponseHandler(Level logLevel, Logger logger, Decoder decoder, ErrorDecoder errorDecoder,
-      boolean dismiss404, boolean closeAfterDecode, boolean decodeVoid,
-      ResponseInterceptor.Chain executionChain) {
-    this.responseHandler = new ResponseHandler(logLevel, logger, decoder, errorDecoder, dismiss404,
-        closeAfterDecode, decodeVoid, executionChain);
-  }
-
-  public CompletableFuture<Object> handleResponse(String configKey,
-                                                  Response response,
-                                                  Type returnType,
-                                                  long elapsedTime) {
-    CompletableFuture<Object> resultFuture = new CompletableFuture<>();
-    handleResponse(resultFuture, configKey, response, returnType, elapsedTime);
-    return resultFuture;
-  }
-
-  /**
-   * @deprecated use {@link #handleResponse(String, Response, Type, long)} instead.
-   */
-  @Deprecated()
-  void handleResponse(CompletableFuture<Object> resultFuture,
-                      String configKey,
-                      Response response,
-                      Type returnType,
-                      long elapsedTime) {
-    try {
-      resultFuture.complete(
-          this.responseHandler.handleResponse(configKey, response, returnType, elapsedTime));
-    } catch (Exception e) {
-      resultFuture.completeExceptionally(e);
+    AsyncResponseHandler(Level logLevel, Logger logger, Decoder decoder, ErrorDecoder errorDecoder,
+                         boolean dismiss404, boolean closeAfterDecode, boolean decodeVoid,
+                         ResponseInterceptor.Chain executionChain) {
+        this.responseHandler = new ResponseHandler(logLevel, logger, decoder, errorDecoder, dismiss404,
+                closeAfterDecode, decodeVoid, executionChain);
     }
-  }
+
+    public CompletableFuture<Object> handleResponse(String configKey,
+                                                    Response response,
+                                                    Type returnType,
+                                                    long elapsedTime) {
+        CompletableFuture<Object> resultFuture = new CompletableFuture<>();
+        handleResponse(resultFuture, configKey, response, returnType, elapsedTime);
+        return resultFuture;
+    }
+
+    /**
+     * @deprecated use {@link #handleResponse(String, Response, Type, long)} instead.
+     */
+    @Deprecated()
+    void handleResponse(CompletableFuture<Object> resultFuture,
+                        String configKey,
+                        Response response,
+                        Type returnType,
+                        long elapsedTime) {
+        try {
+            resultFuture.complete(this.responseHandler.handleResponse(configKey, response, returnType, elapsedTime));
+        } catch (Exception e) {
+            resultFuture.completeExceptionally(e);
+        }
+    }
 }

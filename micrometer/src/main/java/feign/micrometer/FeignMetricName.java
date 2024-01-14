@@ -16,29 +16,29 @@ package feign.micrometer;
 
 public final class FeignMetricName implements MetricName {
 
-  private final Class<?> meteredComponent;
+    private final Class<?> meteredComponent;
 
-  public FeignMetricName(Class<?> meteredComponent) {
-    this.meteredComponent = meteredComponent;
-  }
-
-  @Override
-  public String name(String suffix) {
-    return name()
-        // any separator, so naming convention can change it
-        + "." + suffix;
-  }
-
-  @Override
-  public String name() {
-    return meteredComponent.getName();
-  }
-
-  @Override
-  public String name(Throwable e) {
-    if (e == null) {
-      return name();
+    public FeignMetricName(Class<?> meteredComponent) {
+        this.meteredComponent = meteredComponent;
     }
-    return name("exception");
-  }
+
+    @Override
+    public String name(String suffix) {
+        return name()
+                // any separator, so naming convention can change it
+                + "." + suffix;
+    }
+
+    @Override
+    public String name() {
+        return meteredComponent.getName();
+    }
+
+    @Override
+    public String name(Throwable e) {
+        if (e == null) {
+            return name();
+        }
+        return name("exception");
+    }
 }

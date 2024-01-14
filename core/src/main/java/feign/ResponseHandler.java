@@ -15,9 +15,11 @@ package feign;
 
 import static feign.FeignException.errorReading;
 import static feign.Util.ensureClosed;
+
 import feign.Logger.Level;
 import feign.codec.Decoder;
 import feign.codec.ErrorDecoder;
+
 import java.io.IOException;
 import java.lang.reflect.Type;
 
@@ -27,61 +29,61 @@ import java.lang.reflect.Type;
  */
 public class ResponseHandler {
 
-  private final Level logLevel;
-  private final Logger logger;
+    private final Level logLevel;
+    private final Logger logger;
 
-  private final Decoder decoder;
-  private final ErrorDecoder errorDecoder;
-  private final boolean dismiss404;
-  private final boolean closeAfterDecode;
+    private final Decoder decoder;
+    private final ErrorDecoder errorDecoder;
+    private final boolean dismiss404;
+    private final boolean closeAfterDecode;
 
-  private final boolean decodeVoid;
+    private final boolean decodeVoid;
 
-  private final ResponseInterceptor.Chain executionChain;
+    private final ResponseInterceptor.Chain executionChain;
 
-  public ResponseHandler(Level logLevel, Logger logger, Decoder decoder, ErrorDecoder errorDecoder,
-      boolean dismiss404, boolean closeAfterDecode, boolean decodeVoid,
-      ResponseInterceptor.Chain executionChain) {
-    super();
-    this.logLevel = logLevel;
-    this.logger = logger;
-    this.decoder = decoder;
-    this.errorDecoder = errorDecoder;
-    this.dismiss404 = dismiss404;
-    this.closeAfterDecode = closeAfterDecode;
-    this.decodeVoid = decodeVoid;
-    this.executionChain = executionChain;
-  }
-
-  public Object handleResponse(String configKey,
-                               Response response,
-                               Type returnType,
-                               long elapsedTime)
-      throws Exception {
-    try {
-      response = logAndRebufferResponseIfNeeded(configKey, response, elapsedTime);
-      return executionChain.next(
-          new InvocationContext(configKey, decoder, errorDecoder, dismiss404, closeAfterDecode,
-              decodeVoid, response, returnType));
-    } catch (final IOException e) {
-      if (logLevel != Level.NONE) {
-        logger.logIOException(configKey, logLevel, e, elapsedTime);
-      }
-      throw errorReading(response.request(), response, e);
-    } catch (Exception e) {
-      ensureClosed(response.body());
-      throw e;
-    }
-  }
-
-  private Response logAndRebufferResponseIfNeeded(String configKey,
-                                                  Response response,
-                                                  long elapsedTime)
-      throws IOException {
-    if (logLevel == Level.NONE) {
-      return response;
+    public ResponseHandler(Level logLevel, Logger logger, Decoder decoder, ErrorDecoder errorDecoder,
+                           boolean dismiss404, boolean closeAfterDecode, boolean decodeVoid,
+                           ResponseInterceptor.Chain executionChain) {
+        super();
+        this.logLevel = logLevel;
+        this.logger = logger;
+        this.decoder = decoder;
+        this.errorDecoder = errorDecoder;
+        this.dismiss404 = dismiss404;
+        this.closeAfterDecode = closeAfterDecode;
+        this.decodeVoid = decodeVoid;
+        this.executionChain = executionChain;
     }
 
-    return logger.logAndRebufferResponse(configKey, logLevel, response, elapsedTime);
-  }
+    public Object handleResponse(String configKey,
+                                 Response response,
+                                 Type returnType,
+                                 long elapsedTime)
+            throws Exception {
+        try {
+            response = logAndRebufferResponseIfNeeded(configKey, response, elapsedTime);
+            return executionChain.next(
+                    new InvocationContext(configKey, decoder, errorDecoder, dismiss404, closeAfterDecode,
+                            decodeVoid, response, returnType));
+        } catch (final IOException e) {
+            if (logLevel != Level.NONE) {
+                logger.logIOException(configKey, logLevel, e, elapsedTime);
+            }
+            throw errorReading(response.request(), response, e);
+        } catch (Exception e) {
+            ensureClosed(response.body());
+            throw e;
+        }
+    }
+
+    private Response logAndRebufferResponseIfNeeded(String configKey,
+                                                    Response response,
+                                                    long elapsedTime)
+            throws IOException {
+        if (logLevel == Level.NONE) {
+            return response;
+        }
+
+        return logger.logAndRebufferResponse(configKey, logLevel, response, elapsedTime);
+    }
 }

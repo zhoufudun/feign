@@ -61,6 +61,7 @@ public abstract class Feign {
      * <p>
      * Note that there is no whitespace expected in a key!
      *
+     *
      * @param targetType {@link feign.Target#type() type} of the Feign interface.
      * @param method     invoked method, present on {@code type} or its super.
      * @see MethodMetadata#configKey()
@@ -68,17 +69,29 @@ public abstract class Feign {
     // targetType=interface org.springframework.cloud.openfeign.FeignHttpClientUrlTests$BeanUrlClientNoProtocol
     // method=public abstract org.springframework.cloud.openfeign.FeignHttpClientUrlTests$Hello org.springframework.cloud.openfeign.FeignHttpClientUrlTests$BeanUrlClientNoProtocol.getHello()
     public static String configKey(Class targetType, Method method) {
+        // 创建 StringBuilder 对象，用于构建配置键
         StringBuilder builder = new StringBuilder();
+
+        // 拼接目标类型的简单类名
         builder.append(targetType.getSimpleName());
+
+        // 拼接方法名和参数列表
         builder.append('#').append(method.getName()).append('(');
+
+        // 遍历方法的参数列表
         for (Type param : method.getGenericParameterTypes()) {
+            // 解析参数类型，获取原始类型的简单类名，并添加到配置键中
             param = Types.resolve(targetType, targetType, param);
             builder.append(Types.getRawType(param).getSimpleName()).append(',');
         }
+
+        // 如果方法有参数，则删除最后一个逗号
         if (method.getParameterTypes().length > 0) {
             builder.deleteCharAt(builder.length() - 1);
         }
-        return builder.append(')').toString(); // BeanUrlClientNoProtocol#getHello()
+
+        // 拼接方法的参数列表结束符
+        return builder.append(')').toString(); // 返回生成的配置键，例如 BeanUrlClientNoProtocol#getHello()
     }
 
     /**
